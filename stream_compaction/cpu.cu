@@ -57,7 +57,10 @@ namespace StreamCompaction {
             }
 
             int* prefixSum = new int[n];
-            scan(n, prefixSum, flags);
+			prefixSum[0] = 0;
+            for (int i = 1; i < n; i++) {
+                prefixSum[i] = prefixSum[i - 1] + flags[i - 1];
+			}
 
             for (int i = 0; i < n; i++) {
                 if (idata[i] != 0) {

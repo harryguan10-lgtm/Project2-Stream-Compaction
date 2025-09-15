@@ -124,7 +124,10 @@ namespace StreamCompaction {
             cudaMemcpy(host_bools, dev_bools, n * sizeof(int), cudaMemcpyDeviceToHost);
             checkCUDAError("cudaMemcpy bools to host failed!");
 
-            scan(n, host_indices, host_bools);
+            host_indices[0] = 0;
+            for (int i = 1; i < n; ++i) {
+                host_indices[i] = host_indices[i - 1] + host_bools[i-1];
+            }
 
             cudaMemcpy(dev_indices, host_indices, n * sizeof(int), cudaMemcpyHostToDevice);
             checkCUDAError("cudaMemcpy indices to device failed!");

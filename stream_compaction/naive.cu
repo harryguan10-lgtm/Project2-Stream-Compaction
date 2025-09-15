@@ -16,7 +16,7 @@ namespace StreamCompaction {
         __global__ void kernNaiveScan(int n, int d, int* odata, const int* idata) {
             int k = blockIdx.x * blockDim.x + threadIdx.x;
 
-            if (k >= n) return;
+            if (k >= n) return
 
             int offset = 1 << (d - 1);
 

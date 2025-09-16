@@ -22,9 +22,9 @@ Output: [1, 5, 1, 2, 3]
 
 ### Features Implemented
 - **CPU Implementations**:
-  - `scan`: Exclusive prefix sum using simple for loop
-  - `compactWithoutScan`: Stream compaction without using scan
-  - `compactWithScan`: Stream compaction using scan and scatter
+  - **scan**: Exclusive prefix sum using simple for loop
+  - **compactWithoutScan**: Stream compaction without using scan
+  - **compactWithScan**: Stream compaction using scan and scatter
 
 
 ### Naive Scan
@@ -52,7 +52,7 @@ A more optimized approach that reduces redundant computations and kernel launche
 
 A wrapper around the **Thrust** library’s `exclusive_scan`:
 
-- Provides a **benchmark reference** for performance comparison.
+- Provides a benchmark for performance comparison.
 - Highly optimized and production-ready.
 
 Stream compaction follows a three-step process:

@@ -74,58 +74,65 @@ Stream compaction follows a three-step process:
 
 Having a look at the run time, tt seem like block size does not have a significant impact on performance. But the best performance for naive scan is at block size 128, while work-efficient scan performs best at block size 128 as well. So we would examine our tests using block size of 128 for both Work efficient and Naive.
 
+## Size of an array runtime analysis 
+![](img/graph1.png)
+![](img/graph2.png)
+
+
+Analysis: 
 
 ### Test Results
-
+```
 ****************
 ** SCAN TESTS **
 ****************
-    [  33  10   3  20  25  44  27  41  30  36  17  16  11 ...  45   0 ]
+    [  35   9  39   5  34   1  41  13  45  43  23  44  20 ...  45   0 ]
 ==== cpu scan, power-of-two ====
-   elapsed time: 1.7457ms    (std::chrono Measured)
-    [   0  33  43  46  66  91 135 162 203 233 269 286 302 ... 25701609 25701654 ]
+   elapsed time: 1.7865ms    (std::chrono Measured)
+    [   0  35  44  83  88 122 123 164 177 222 265 288 332 ... 25689533 25689578 ]
 ==== cpu scan, non-power-of-two ====
-   elapsed time: 2.0374ms    (std::chrono Measured)
-    [   0  33  43  46  66  91 135 162 203 233 269 286 302 ... 25701550 25701561 ]
+   elapsed time: 1.8431ms    (std::chrono Measured)
+    [   0  35  44  83  88 122 123 164 177 222 265 288 332 ... 25689405 25689454 ]
     passed
 ==== naive scan, power-of-two ====
-   elapsed time: 5.71674ms    (CUDA Measured)
+   elapsed time: 6.30218ms    (CUDA Measured)
     passed
 ==== naive scan, non-power-of-two ====
-   elapsed time: 6.00435ms    (CUDA Measured)
+   elapsed time: 5.49034ms    (CUDA Measured)
     passed
 ==== work-efficient scan, power-of-two ====
-   elapsed time: 8.50749ms    (CUDA Measured)
+   elapsed time: 8.95414ms    (CUDA Measured)
     passed
 ==== work-efficient scan, non-power-of-two ====
-   elapsed time: 8.39498ms    (CUDA Measured)
+   elapsed time: 8.35494ms    (CUDA Measured)
     passed
 ==== thrust scan, power-of-two ====
-   elapsed time: 76.425ms    (CUDA Measured)
+   elapsed time: 39.2416ms    (CUDA Measured)
     passed
 ==== thrust scan, non-power-of-two ====
-   elapsed time: 60.5836ms    (CUDA Measured)
+   elapsed time: 32.6714ms    (CUDA Measured)
     passed
 
 *****************************
 ** STREAM COMPACTION TESTS **
 *****************************
-    [   1   2   3   2   1   0   1   3   2   2   3   2   1 ...   3   0 ]
+    [   1   1   3   3   0   1   3   1   3   1   1   0   2 ...   3   0 ]
 ==== cpu compact without scan, power-of-two ====
-   elapsed time: 3.2696ms    (std::chrono Measured)
-    [   1   2   3   2   1   1   3   2   2   3   2   1   1 ...   1   3 ]
+   elapsed time: 3.4072ms    (std::chrono Measured)
+    [   1   1   3   3   1   3   1   3   1   1   2   3   2 ...   2   3 ]
     passed
 ==== cpu compact without scan, non-power-of-two ====
-   elapsed time: 3.502ms    (std::chrono Measured)
-    [   1   2   3   2   1   1   3   2   2   3   2   1   1 ...   3   1 ]
+   elapsed time: 3.43ms    (std::chrono Measured)
+    [   1   1   3   3   1   3   1   3   1   1   2   3   2 ...   3   3 ]
     passed
 ==== cpu compact with scan ====
-   elapsed time: 9.7251ms    (std::chrono Measured)
-    [   1   2   3   2   1   1   3   2   2   3   2   1   1 ...   1   3 ]
+   elapsed time: 9.6884ms    (std::chrono Measured)
+    [   1   1   3   3   1   3   1   3   1   1   2   3   2 ...   2   3 ]
     passed
 ==== work-efficient compact, power-of-two ====
-   elapsed time: 6.70701ms    (CUDA Measured)
+   elapsed time: 6.65181ms    (CUDA Measured)
     passed
 ==== work-efficient compact, non-power-of-two ====
-   elapsed time: 6.34163ms    (CUDA Measured)
+   elapsed time: 6.12739ms    (CUDA Measured)
     passed
+```

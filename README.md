@@ -33,7 +33,7 @@ A algorithm that uses global memory exclusively. In each of `log(n)` passes, it 
 
 - **Approach**: Launches a thread per element, adds pairs with increasing offsets.
 - **Time Complexity**: `O(n log n)`
-- **Limitation**: A separate kernel launch per pass introduces **serialization overhead**, reducing performance.
+- **Limitation**: A separate kernel launch per pass introduces serialization overhead, reducing performance.
 
 ###  Work-Efficient Scan
 
@@ -81,13 +81,13 @@ Having a look at the run time, tt seem like block size does not have a significa
 Thrust crushes everything (0.49–2.54 ms) and easily beats my CPU (1.73–53.87 ms) at all sizes. My work‑efficient scan improves on naive but still trails the CPU, while naive is consistently the slowest. Overall: Thrust >> CPU > work‑efficient > naive, for both power‑of‑two and non‑power‑of‑two arrays.
 
 ## Can you find the performance bottlenecks? Is it memory I/O? Computation? Is it different for each implementation?
-**CPU**: The CPU scan consistently beats thr GPU kernels at all sizes. Its single‑pass that is cache friendly. Even at 1<<25 the CPU (≈53.9 ms) is still ahead of naive (≈94.1 ms) and work‑efficient scan (≈70.9 ms), making CPU second overall behind Thrust.
+**CPU**: "The CPU scan consistently outperforms the GPU kernels at all sizes. Its single-pass, cache-friendly approach makes it efficient. Even at 1<<25, the CPU (≈53.9 ms) remains faster than the naive scan (≈94.1 ms) and the work-efficient scan (≈70.9 ms), making the CPU the second fastest overall, behind Thrust.
 
-**Naive**: For small arrays it can be okay, but because it's very simple work on the GPU. But it repeats the same kind of work many times, so as an array grows, the repeated passes add up and it falls behind the Work-efficient algorithm. 
+**Naive**: For small arrays, it can perform reasonably well because the work on the GPU is very simple. However, it repeats the same kind of work many times, so as the array grows, the repeated passes accumulate, causing it to fall behind the work-efficient algorithm
 
-**Work‑Efficient**:  It does less total work than naive, but it involves more coordination between threads. For small arrays, that coordination overhead outweighs the benefit, so it can be slower than naive. As arrays get bigger, the small work it had to do starts to matter and it pulls ahead of the naive, which you can see. 
+**Work‑Efficient**: It performs less total work than the naive approach, but it requires more coordination between threads. For small arrays, this coordination overhead outweighs the benefits, making it potentially slower than the naive version. However, as the arrays get larger, the reduced total work becomes more significant, allowing it to outperform the naive implementation as can be seen in the results
 
-**Thrust**: Thrust is by far the fastest in the data (≈0.49–2.54 ms). Unfortunately, due to lack of permission from nsight systems I'm unable to capture a profile of its internal workings. However, Thrust is a highly optimized library that likely employs advanced techniques such as shared memory usage and other optimizations to minimize global memory accesses and kernel launches. This results in its superior performance compared to both my CPU and custom GPU implementations.
+**Thrust**: Thrust is by far the fastest in the dataset (≈0.49–2.54 ms). Unfortunately, due to insufficient permissions with Nsight Systems, I was unable to capture a profile of its internal operations. However, Thrust is a highly optimized library that likely leverages advanced techniques such as shared memory usage and other strategies to minimize global memory accesses and kernel launches. These optimizations contribute to its superior performance compared to both my CPU and custom GPU implementations
 
 ### Test Results
 ```

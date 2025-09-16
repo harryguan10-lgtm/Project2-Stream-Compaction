@@ -1,4 +1,4 @@
-CUDA Stream Compaction
+﻿ CUDA Stream Compaction
 ======================
 
 **University of Pennsylvania, CIS 565: GPU Programming and Architecture, Project 2**
@@ -50,7 +50,7 @@ A more optimized approach that reduces redundant computations and kernel launche
 
 ### 4. Thrust Scan
 
-A wrapper around the **Thrust** library�s `exclusive_scan`:
+A wrapper around the **Thrust** library’s `exclusive_scan`:
 
 - Provides a benchmark for performance comparison.
 - Highly optimized and production-ready.
@@ -74,65 +74,73 @@ Stream compaction follows a three-step process:
 
 Having a look at the run time, tt seem like block size does not have a significant impact on performance. But the best performance for naive scan is at block size 128, while work-efficient scan performs best at block size 128 as well. So we would examine our tests using block size of 128 for both Work efficient and Naive.
 
-## Size of an array runtime analysis 
+## Size of an array runtime analysis  (Compare all of these GPU Scan implementations (Naive, Work-Efficient, and Thrust) to the serial CPU version of Scan. Plot a graph of the comparison (with array size on the independent axis).)
 ![](img/graph1.png)
 ![](img/graph2.png)
 
+Thrust crushes everything (0.49–2.54 ms) and easily beats my CPU (1.73–53.87 ms) at all sizes. My work‑efficient scan improves on naive but still trails the CPU, while naive is consistently the slowest. Overall: Thrust >> CPU > work‑efficient > naive, for both power‑of‑two and non‑power‑of‑two arrays.
 
-Analysis: 
+## Can you find the performance bottlenecks? Is it memory I/O? Computation? Is it different for each implementation?
+**CPU**: The CPU scan consistently beats thr GPU kernels at all sizes. Its single‑pass that is cache friendly. Even at 1<<25 the CPU (≈53.9 ms) is still ahead of naive (≈94.1 ms) and work‑efficient scan (≈70.9 ms), making CPU second overall behind Thrust.
+
+**Naive**: For small arrays it can be okay, but because it's very simple work on the GPU. But it repeats the same kind of work many times, so as an array grows, the repeated passes add up and it falls behind the Work-efficient algorithm. 
+
+**Work‑Efficient**:  It does less total work than naive, but it involves more coordination between threads. For small arrays, that coordination overhead outweighs the benefit, so it can be slower than naive. As arrays get bigger, the small work it had to do starts to matter and it pulls ahead of the naive, which you can see. 
+
+**Thrust**: Thrust is by far the fastest in the data (≈0.49–2.54 ms). Unfortunately, due to lack of permission from nsight systems I'm unable to capture a profile of its internal workings. However, Thrust is a highly optimized library that likely employs advanced techniques such as shared memory usage and other optimizations to minimize global memory accesses and kernel launches. This results in its superior performance compared to both my CPU and custom GPU implementations.
 
 ### Test Results
 ```
 ****************
 ** SCAN TESTS **
 ****************
-    [  35   9  39   5  34   1  41  13  45  43  23  44  20 ...  45   0 ]
+    [  29  28  20   1  20  13  37  39   2   7  37  36  29 ...  29   0 ]
 ==== cpu scan, power-of-two ====
-   elapsed time: 1.7865ms    (std::chrono Measured)
-    [   0  35  44  83  88 122 123 164 177 222 265 288 332 ... 25689533 25689578 ]
+   elapsed time: 1.6521ms    (std::chrono Measured)
+    [   0  29  57  77  78  98 111 148 187 189 196 233 269 ... 25686366 25686395 ]
 ==== cpu scan, non-power-of-two ====
-   elapsed time: 1.8431ms    (std::chrono Measured)
-    [   0  35  44  83  88 122 123 164 177 222 265 288 332 ... 25689405 25689454 ]
+   elapsed time: 1.6747ms    (std::chrono Measured)
+    [   0  29  57  77  78  98 111 148 187 189 196 233 269 ... 25686263 25686301 ]
     passed
 ==== naive scan, power-of-two ====
-   elapsed time: 6.30218ms    (CUDA Measured)
+   elapsed time: 3.05206ms    (CUDA Measured)
     passed
 ==== naive scan, non-power-of-two ====
-   elapsed time: 5.49034ms    (CUDA Measured)
+   elapsed time: 3.13402ms    (CUDA Measured)
     passed
 ==== work-efficient scan, power-of-two ====
-   elapsed time: 8.95414ms    (CUDA Measured)
+   elapsed time: 4.04442ms    (CUDA Measured)
     passed
 ==== work-efficient scan, non-power-of-two ====
-   elapsed time: 8.35494ms    (CUDA Measured)
+   elapsed time: 3.39414ms    (CUDA Measured)
     passed
 ==== thrust scan, power-of-two ====
-   elapsed time: 39.2416ms    (CUDA Measured)
+   elapsed time: 0.472384ms    (CUDA Measured)
     passed
 ==== thrust scan, non-power-of-two ====
-   elapsed time: 32.6714ms    (CUDA Measured)
+   elapsed time: 0.44912ms    (CUDA Measured)
     passed
 
 *****************************
 ** STREAM COMPACTION TESTS **
 *****************************
-    [   1   1   3   3   0   1   3   1   3   1   1   0   2 ...   3   0 ]
+    [   1   0   2   1   2   1   3   1   2   1   3   0   1 ...   1   0 ]
 ==== cpu compact without scan, power-of-two ====
-   elapsed time: 3.4072ms    (std::chrono Measured)
-    [   1   1   3   3   1   3   1   3   1   1   2   3   2 ...   2   3 ]
+   elapsed time: 1.9785ms    (std::chrono Measured)
+    [   1   2   1   2   1   3   1   2   1   3   1   2   1 ...   3   1 ]
     passed
 ==== cpu compact without scan, non-power-of-two ====
-   elapsed time: 3.43ms    (std::chrono Measured)
-    [   1   1   3   3   1   3   1   3   1   1   2   3   2 ...   3   3 ]
+   elapsed time: 1.8681ms    (std::chrono Measured)
+    [   1   2   1   2   1   3   1   2   1   3   1   2   1 ...   2   2 ]
     passed
 ==== cpu compact with scan ====
-   elapsed time: 9.6884ms    (std::chrono Measured)
-    [   1   1   3   3   1   3   1   3   1   1   2   3   2 ...   2   3 ]
+   elapsed time: 4.8619ms    (std::chrono Measured)
+    [   1   2   1   2   1   3   1   2   1   3   1   2   1 ...   3   1 ]
     passed
 ==== work-efficient compact, power-of-two ====
-   elapsed time: 6.65181ms    (CUDA Measured)
+   elapsed time: 5.77722ms    (CUDA Measured)
     passed
 ==== work-efficient compact, non-power-of-two ====
-   elapsed time: 6.12739ms    (CUDA Measured)
+   elapsed time: 5.46666ms    (CUDA Measured)
     passed
 ```
